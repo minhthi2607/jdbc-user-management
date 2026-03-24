@@ -17,7 +17,14 @@
         <caption><h2>List of Users</h2></caption>
         <tr>
             <th>ID</th>
-            <th>Name</th>
+            <th>
+                <a href="/users?action=sort&sortBy=name&order=asc">
+                    Name ASC
+                </a>
+                <a href="/users?action=sort&sortBy=name&order=desc">
+                    Name DESC
+                </a>
+            </th>
             <th>Email</th>
             <th>Country</th>
             <th>Actions</th>
@@ -35,6 +42,11 @@
             </tr>
         </c:forEach>
     </table>
+    <form action="" method="get">
+        <input type="hidden" name="action" value="search">
+        <input type="text" id="search" name="search" placeholder="Search...">
+        <input type="submit" value="Search">
+    </form>
 </div>
 </body>
 </html>

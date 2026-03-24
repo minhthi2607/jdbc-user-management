@@ -39,12 +39,47 @@ public class UserServlet extends HttpServlet {
                 case "delete":
                     deleteUser(request, response);
                     break;
+                case "search":
+                    searchCountry(request, response);
+                    break;
+                case "sort":
+                    sortUser(request, response);
+                    break;
                 default:
                     listUser(request, response);
                     break;
             }
         } catch (SQLException e) {
             throw new ServletException(e);
+        }
+    }
+
+    private void sortUser(HttpServletRequest request, HttpServletResponse response) {
+        String sort_by = request.getParameter("sortBy");
+        String order = request.getParameter("order");
+
+        List<User> users = userDAO.orderByName(order);
+        request.setAttribute("users", users);
+        RequestDispatcher dispatcher = request.getRequestDispatcher("user/list.jsp");
+        try {
+            dispatcher.forward(request, response);
+        } catch (ServletException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void searchCountry(HttpServletRequest request, HttpServletResponse response) {
+        String country_search = request.getParameter("search");
+        if (country_search == null) {
+            country_search = "";
+        }
+        List<User> users = userDAO.selectUserByCountry(country_search);
+        request.setAttribute("users", users);
+        RequestDispatcher dispatcher = request.getRequestDispatcher("user/list.jsp");
+        try {
+            dispatcher.forward(request, response);
+        } catch (ServletException | IOException e) {
+            e.printStackTrace();
         }
     }
 

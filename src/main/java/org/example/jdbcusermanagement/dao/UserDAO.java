@@ -16,6 +16,10 @@ public class UserDAO implements IUserDAO{
     private static final String SELECT_ALL_USERS = "SELECT * FROM users";
     private static final String DELETE_USERS_SQL = "DELETE FROM users WHERE id = ?";
     private static final String UPDATE_USERS_SQL = "UPDATE users SET name = ?, email = ?, country = ? WHERE id = ?";
+    private static final String SELECT_USER_BY_COUNTRY =
+            "SELECT id, name, email, country FROM users WHERE country LIKE ?";
+    private static final String ORDER_BY_NAME_ASC = "SELECT * FROM users ORDER BY name ASC";
+    private static final String ORDER_BY_NAME_DESC = "SELECT * FROM users ORDER BY name DESC";
 
     public UserDAO(){}
 
@@ -70,15 +74,7 @@ public class UserDAO implements IUserDAO{
         List<User> users = new ArrayList<>();
         try(Connection connection = getConnection(); PreparedStatement preparedStatement =  connection.prepareStatement(SELECT_ALL_USERS);){
             System.out.println("prestatement: " + preparedStatement);
-            ResultSet rs = preparedStatement.executeQuery();
-            while(rs.next()){
-                int id = rs.getInt("id");
-                String name = rs.getString("name");
-                String email = rs.getString("email");
-                String country = rs.getString("country");
-
-                users.add(new User(id, name, email, country));
-            }
+            getUser(users, preparedStatement);
         }catch (SQLException e){
             printSQLException(e);
         }
@@ -120,5 +116,42 @@ public class UserDAO implements IUserDAO{
                 }
             }
         }
+    }
+
+    public List<User> selectUserByCountry(String countrySearch){
+        List<User> users = new ArrayList<>();
+        try(Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(SELECT_USER_BY_COUNTRY);){
+            preparedStatement.setString(1, "%" + countrySearch + "%");
+            getUser(users, preparedStatement);
+
+        }
+        catch (SQLException e){
+            printSQLException(e);
+        }
+        return users;
+    }
+
+    private void getUser(List<User> users, PreparedStatement preparedStatement) throws SQLException {
+        ResultSet rs = preparedStatement.executeQuery();
+        while(rs.next()){
+            int id = rs.getInt("id");
+            String name = rs.getString("name");
+            String email = rs.getString("email");
+            String country = rs.getString("country");
+
+            users.add(new User(id, name, email, country));
+        }
+    }
+
+    public List<User> orderByName(String order){
+        List<User> users = new ArrayList<>();
+        String sql = order.equals("asc") ? ORDER_BY_NAME_ASC : ORDER_BY_NAME_DESC;
+        try(Connection connection =  getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(sql);){
+            System.out.println("prestatement: " + preparedStatement);
+            getUser(users, preparedStatement);
+        }catch (SQLException e){
+            printSQLException(e);
+        }
+        return users;
     }
 }
