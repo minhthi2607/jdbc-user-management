@@ -86,9 +86,15 @@ public class UserDAO implements IUserDAO{
 
     public List<User> selectAllUsers(){
         List<User> users = new ArrayList<>();
-        try(Connection connection = getConnection(); PreparedStatement preparedStatement =  connection.prepareStatement(SELECT_ALL_USERS);){
-            System.out.println("prestatement: " + preparedStatement);
-            getUser(users, preparedStatement);
+//        try(Connection connection = getConnection(); PreparedStatement preparedStatement =  connection.prepareStatement(SELECT_ALL_USERS);){
+//            System.out.println("prestatement: " + preparedStatement);
+//            getUser(users, preparedStatement);
+//        }catch (SQLException e){
+//            printSQLException(e);
+//        }
+        String sql = "{Call get_all_users()}";
+        try(Connection connection = getConnection(); CallableStatement callableStatement = connection.prepareCall(sql)){
+            getUser(users, callableStatement);
         }catch (SQLException e){
             printSQLException(e);
         }
@@ -97,23 +103,39 @@ public class UserDAO implements IUserDAO{
 
     public boolean deleteUser(int id) throws SQLException{
         boolean isDeleted = false;
-        try(Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(DELETE_USERS_SQL);){
-            preparedStatement.setInt(1, id);
-            isDeleted = preparedStatement.executeUpdate() > 0;
-
+        String sql = "{Call delete_user(?)}";
+        try(Connection connection = getConnection(); CallableStatement callableStatement = connection.prepareCall(sql);){
+            callableStatement.setInt(1, id);
+            isDeleted = callableStatement.executeUpdate() > 0;
         }
+//        try(Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(DELETE_USERS_SQL);){
+//            preparedStatement.setInt(1, id);
+//            isDeleted = preparedStatement.executeUpdate() > 0;
+//
+//        }
         return isDeleted;
     }
 
     public boolean updateUser(User user) throws SQLException{
         boolean isUpdated = false;
-        try(Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_USERS_SQL);){
-            preparedStatement.setString(1, user.getName());
-            preparedStatement.setString(2, user.getEmail());
-            preparedStatement.setString(3, user.getCountry());
-            preparedStatement.setInt(4, user.getId());
-            isUpdated = preparedStatement.executeUpdate() > 0;
+        String sql = "{Call update_user(?,?,?,?)}";
+        try(Connection connection = getConnection(); CallableStatement callableStatement = connection.prepareCall(sql);){
+            callableStatement.setInt(1, user.getId());
+            callableStatement.setString(2, user.getName());
+            callableStatement.setString(3, user.getEmail());
+            callableStatement.setString(4, user.getCountry());
+
+            isUpdated = callableStatement.executeUpdate() > 0;
+        }catch (SQLException e){
+            printSQLException(e);
         }
+//        try(Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_USERS_SQL);){
+//            preparedStatement.setString(1, user.getName());
+//            preparedStatement.setString(2, user.getEmail());
+//            preparedStatement.setString(3, user.getCountry());
+//            preparedStatement.setInt(4, user.getId());
+//            isUpdated = preparedStatement.executeUpdate() > 0;
+//        }
         return isUpdated;
     }
 
@@ -301,4 +323,6 @@ public class UserDAO implements IUserDAO{
             e.printStackTrace();
         }
     }
+
+
 }
